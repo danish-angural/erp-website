@@ -13,6 +13,8 @@ def main(request):
 
 def home(request):
 	user=request.user
+	if(user.utype=='PER'):
+		return render(request,'superuser.html',{'user':user})
 	if(user.utype=='SAL'):
 		if(request.method=='GET'):
 			data=Order.objects.all().filter(status='all approval pending')
@@ -71,8 +73,6 @@ def signup(request):
 			user = authenticate(username=username, password=raw_password)
 			login(request, user)
 			return redirect('home')
-		else:
-			messages.error(request, "Error")
 	else:
 		if(request.user is not None):
 			return redirect('/home/')
@@ -87,6 +87,7 @@ def user_login(request):
 		if user is not None:
 			if user.is_active:
 				login(request, user)
+				return redirect('home')
 		else:
 			return HttpResponse('invalid credentials')
 	return render(request, 'login.html')
@@ -94,7 +95,3 @@ def user_login(request):
 def user_logout(request):
     logout(request)
     return redirect('login')
-
-def get_staff(request):
-	data = User.objects.all()
-	return render(request, 'staff.html', {'data': data})
