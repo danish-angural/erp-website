@@ -1,18 +1,62 @@
 from django.contrib.auth import logout, login, authenticate,forms
 from django.shortcuts import render, redirect
-from .forms import CustomUserCreationForm
+from .forms import CustomUserCreationForm, OrderCreationForm
 from django.contrib.auth import update_session_auth_hash
 from django.http import HttpResponse
 #from django.contrib.auth.models import User
 from django.urls import reverse
 from . import models
-from . models import User
+from . models import User, Order
 # Create your views here.
 def main(request):
     return render(request, 'main.html',{})
 
 def home(request):
-	return render(request,'home.html',{})
+	user=request.user
+	if(user.utype=='SAL'):
+		if(request.method=='GET'):
+			data=Order.objects.all().filter(status='all approval pending')
+			return render(request,'sales.html',{'user':user, 'data': data})
+		else:
+			pass
+
+
+	if(user.utype=='SUP'):
+		if(request.method=='GET'):
+			data=Order.objects.all().filter(status='sales approval pending')
+			return render(request,'sales.html',{'user':user, 'data': data})
+		else:
+			pass
+
+
+	if(user.utype=='OPE'):
+		if(request.method=='GET'):
+			data=Order.objects.all().filter(status='operations approval pending')
+			return render(request,'operations.html',{'user':user, 'data': data})
+		else:
+			pass
+
+
+	if(user.utype=='FIN'):
+		if(request.method=='GET'):
+			data=Order.objects.all().filter(status='finance approval pending')
+			return render(request,'finance.html',{'user':user, 'data': data})
+		else:
+			pass
+		
+	
+	if(user.utype=='CUS'):
+		if(request.method=='GET'):
+			form=OrderCreationForm()
+			return render(request, 'customer.html',{'user':user, 'form':form})
+		else:
+			form=OrderCreationForm(request.POST)
+			order=Order.objects.create(material=form.data.get('product'), quantity=form.data.get('quantity'), client=user)
+			order.save()
+			form=OrderCreationForm()
+			return render(request, 'customer.html',{'user':user, 'form':form})
+
+
 
 def signup(request):
 	if(request.method=='POST'):
@@ -30,8 +74,10 @@ def signup(request):
 		else:
 			messages.error(request, "Error")
 	else:
+		if(request.user is not None):
+			return redirect('/home/')
 		form = CustomUserCreationForm()
-	return render(request, 'signup.html', {'form': form})
+		return render(request, 'signup.html', {'form': form})
 
 def user_login(request):
 	if(request.method == 'POST'):
@@ -41,7 +87,8 @@ def user_login(request):
 		if user is not None:
 			if user.is_active:
 				login(request, user)
-				return redirect('home')
+		else:
+			return HttpResponse('invalid credentials')
 	return render(request, 'login.html')
 
 def user_logout(request):
@@ -50,5 +97,4 @@ def user_logout(request):
 
 def get_staff(request):
 	data = User.objects.all()
-	return render(request, 'staff.html', {'data': data,})
-
+	return render(request, 'staff.html', {'data': data})

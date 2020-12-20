@@ -1,5 +1,6 @@
 {% block content %}
   <h2>Welcome, {{ user.username }}!</h2>
+  {{user.utype}}
   <a href="{% url 'logout' %}">logout</a>
   {% if request.user.is_superuser %}
   <a href="{% url 'staff' %}">change staff</a>
