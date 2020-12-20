@@ -2,6 +2,6 @@
   <h2>Welcome, {{ user.username }}!</h2>
   <a href="{% url 'logout' %}">logout</a>
   {% if request.user.is_superuser %}
-  <a href="{% url 'staff' %}">change staff</a>
+  <a href="{% url 'admin:index' %}">change staff</a>
   {% endif %}
 {% endblock %}

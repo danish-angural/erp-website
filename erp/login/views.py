@@ -27,8 +27,6 @@ def signup(request):
 			user = authenticate(username=username, password=raw_password)
 			login(request, user)
 			return redirect('home')
-		else:
-			messages.error(request, "Error")
 	else:
 		form = CustomUserCreationForm()
 	return render(request, 'signup.html', {'form': form})
@@ -47,8 +45,3 @@ def user_login(request):
 def user_logout(request):
     logout(request)
     return redirect('login')
-
-def get_staff(request):
-	data = User.objects.all()
-	return render(request, 'staff.html', {'data': data,})
-
