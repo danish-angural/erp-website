@@ -1,0 +1,23 @@
+{% if request.user.is_superuser %}
+<table>
+<tr>
+<th> First Name </th>
+<th> Last Name </th>
+<th> Designation </th>
+</tr>
+{% for staff in data %}
+	{% if staff.is_superuser %}
+	{% else %}
+	<tr>
+	<th> {{staff.first_name}} </th>
+	<th> {{staff.last_name}} </th>
+	<th> {{staff.utype}} </th>
+	</tr>
+	{% endif %}
+{% endfor %}
+{% else %}
+"Hello! You are not allowed to access this page"
+{% endif %}
+</table>
+<br>
+<a href="{% url 'home' %}">back to home</a>
