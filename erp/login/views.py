@@ -21,6 +21,7 @@ def home(request):
 			return render(request,'sales.html',{'user':user, 'data': data})
 		else:
 			pass
+			
 
 
 	if(user.utype=='SUP'):
@@ -36,15 +37,23 @@ def home(request):
 			data=Order.objects.all().filter(status='operations approval pending')
 			return render(request,'operations.html',{'user':user, 'data': data})
 		else:
-			pass
+			order=Order.objects.all().get(id=request.POST.get('id'))
+			order.status='finance approval pending'
+			order.save()
+			data=Order.objects.all().filter(status='operations approval pending')
+			return render(request,'operations.html',{'user':user, 'data': data})
 
 
 	if(user.utype=='FIN'):
 		if(request.method=='GET'):
 			data=Order.objects.all().filter(status='finance approval pending')
-			return render(request,'finance.html',{'user':user, 'data': data})
+			return render(request,'operations.html',{'user':user, 'data': data})
 		else:
-			pass
+			order=Order.objects.all().get(id=request.POST.get('id'))
+			order.status='all approved'
+			order.save()
+			data=Order.objects.all().filter(status='finance approval pending')
+			return render(request,'finance.html',{'user':user, 'data': data})
 		
 	
 	if(user.utype=='CUS'):

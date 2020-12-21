@@ -3,5 +3,10 @@
 data: {{ element.material }}<br>
 quantity: {{ element.quantity }}<br>
 date: {{ element.date }}<br>
+<form method='POST'>
+    {% csrf_token %}
+    <input hidden value={{element.id}} name="id">
+    <button type="submit"> approve</button>
+</form>
 {% endfor %}
 <a href="{% url 'logout' %}">logout</a>
