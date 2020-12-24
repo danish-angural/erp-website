@@ -13,8 +13,8 @@ def main(request):
 
 def home(request):
 	user=request.user
-	if(user.utype=='PER'):
-		return render(request,'superuser.html',{'user':user})
+	# if(user and user.utype=='PER'):
+	# 	return render(request,'superuser.html',{'user':user})
 	if(user.utype=='SAL'):
 		if(request.method=='GET'):
 			data=Order.objects.all().filter(status='all approval pending')
@@ -59,13 +59,17 @@ def home(request):
 	if(user.utype=='CUS'):
 		if(request.method=='GET'):
 			form=OrderCreationForm()
-			return render(request, 'customer.html',{'user':user, 'form':form})
+			data=request.user.order_set.all()
+			print(data)
+			return render(request, 'customer.html',{'user':user, 'form':form, 'data': data})
 		else:
 			form=OrderCreationForm(request.POST)
 			order=Order.objects.create(material=form.data.get('product'), quantity=form.data.get('quantity'), client=user)
 			order.save()
 			form=OrderCreationForm()
-			return render(request, 'customer.html',{'user':user, 'form':form})
+			data=request.user.order_set.all()
+			print(data)
+			return render(request, 'customer.html',{'user':user, 'form':form, 'data': data})
 
 
 
@@ -81,9 +85,11 @@ def signup(request):
 			raw_password = form.cleaned_data.get('password1')
 			user = authenticate(username=username, password=raw_password)
 			login(request, user)
+			print(user)
 			return redirect('home')
 	else:
-		if(request.user is not None):
+		print(request.user)
+		if(not request.user.is_anonymous):
 			return redirect('/home/')
 		form = CustomUserCreationForm()
 		return render(request, 'signup.html', {'form': form})

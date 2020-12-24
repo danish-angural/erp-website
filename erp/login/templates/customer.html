@@ -1,5 +1,5 @@
 {% block content %}
-  <h2>Sign up</h2>
+  <h2>{{ user.first_name }}</h2>
   <form method="POST">
     {% csrf_token %}
     {% for field in form %}
@@ -16,5 +16,13 @@
     {% endfor %}
     <button type="submit">submit</button>
   </form>
+  <h3>your previous orders</h3>
+  {% for element in data %}
+  {{ element.material }}
+  {{ element.quantity }}
+  {{ element.date }}
+  {{ element.status }}
+  <br>
+  {% endfor %}
 {% endblock %}
 <a href="{% url 'logout' %}">logout</a>
