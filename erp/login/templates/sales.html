@@ -1,7 +1,30 @@
 {{user.utype}}<br>
-{% for element in data %}<br>
-data: {{ element.material }}<br>
-quantity: {{ element.quantity }}<br>
-date: {{ element.date }}<br>
-{% endfor %}
+<p> Welcome {{user.get_full_name}}!!! </p>
+{% block content %}
+  <form method="POST">
+    {% csrf_token %}
+    {% for field in form %}
+      <p>
+        {{ field.label_tag }}<br>
+        {{ field }}
+        {% if field.help_text %}
+          <small style="color: grey">{{ field.help_text }}</small>
+        {% endif %}
+        {% for error in field.errors %}
+          <p style="color: red">{{ error }}</p>
+        {% endfor %}
+      </p>
+    {% endfor %}
+    <button type="submit">submit</button>
+  </form>
+  <h3>your previous orders</h3>
+  {% for element in data %}
+  {{ element.material }}
+  {{ element.quantity }}
+  {{ element.client }}
+  {{ element.date }}
+  {{ element.status }}
+  <br>
+  {% endfor %}
+{% endblock %}
 <a href="{% url 'logout' %}">logout</a>
