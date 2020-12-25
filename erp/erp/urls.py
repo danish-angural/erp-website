@@ -26,4 +26,5 @@ urlpatterns = [
     path('signup/', login_view.signup, name='signup'),
     path('login/', login_view.user_login, name='login'),
     path('logout/', login_view.user_logout, name='logout'),
+    url(r'^delete_order/(?P<pk>\d+)/$', login_view.delete_order, name='delete_order'),
 ]

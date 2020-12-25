@@ -1,5 +1,45 @@
 {{user.utype}}<br>
-{% for element in data %}<br>
+Welcome {{user.get_full_name}}!!!<br>
+<br><br><br>
+Technical Approved SO
+{% for element in data1 %}<br>
+data: {{ element.material }}<br>
+quantity: {{ element.quantity }}<br>
+date: {{ element.date }}<br>
+<form method='POST'>
+    {% csrf_token %}
+    <input hidden value={{element.id}} name="id">
+    <button type="submit"> approve</button>
+</form>
+<a href="{% url 'delete_order' element.id %}">remove</a>
+{% endfor %}
+<br><br><br>
+Ready for Dispatch
+{% for element in data2 %}<br>
+data: {{ element.material }}<br>
+quantity: {{ element.quantity }}<br>
+date: {{ element.date }}<br>
+<form method='POST'>
+    {% csrf_token %}
+    <input hidden value={{element.id}} name="id">
+    <button type="submit"> approve</button>
+</form>
+{% endfor %}
+<br><br><br>
+Dispatch Completed
+{% for element in data3 %}<br>
+data: {{ element.material }}<br>
+quantity: {{ element.quantity }}<br>
+date: {{ element.date }}<br>
+<form method='POST'>
+    {% csrf_token %}
+    <input hidden value={{element.id}} name="id">
+    <button type="submit"> approve</button>
+</form>
+{% endfor %}
+<br><br><br>
+Final Payments Recieved
+{% for element in data4 %}<br>
 data: {{ element.material }}<br>
 quantity: {{ element.quantity }}<br>
 date: {{ element.date }}<br>

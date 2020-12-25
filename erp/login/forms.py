@@ -48,3 +48,4 @@ class CustomUserCreationForm(forms.Form):
 class OrderCreationForm(forms.Form):
     product=forms.CharField(label='product')
     quantity=forms.IntegerField(label='quantity')
+    client = forms.CharField(label='client')

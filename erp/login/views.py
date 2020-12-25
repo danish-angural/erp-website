@@ -13,63 +13,76 @@ def main(request):
 
 def home(request):
 	user=request.user
-	# if(user and user.utype=='PER'):
-	# 	return render(request,'superuser.html',{'user':user})
+	if(user and user.utype=='PER'):
+	 	return render(request,'superuser.html',{'user':user})
+	'''
 	if(user.utype=='SAL'):
 		if(request.method=='GET'):
 			data=Order.objects.all().filter(status='all approval pending')
 			return render(request,'sales.html',{'user':user, 'data': data})
 		else:
 			pass
-			
-
-
+	'''		
 	if(user.utype=='SUP'):
-		if(request.method=='GET'):
-			data=Order.objects.all().filter(status='sales approval pending')
-			return render(request,'sales.html',{'user':user, 'data': data})
-		else:
-			pass
+		if(request.method=='POST'):
+			order=Order.objects.all().get(id=request.POST.get('id'))
+			order.status='New SO'
+			order.save()
+		data=Order.objects.all().filter(status='new draft')
+		return render(request,'support.html',{'user':user, 'data': data})
 
 
 	if(user.utype=='OPE'):
-		if(request.method=='GET'):
-			data=Order.objects.all().filter(status='operations approval pending')
-			return render(request,'operations.html',{'user':user, 'data': data})
-		else:
+		if(request.method=='POST'):
 			order=Order.objects.all().get(id=request.POST.get('id'))
-			order.status='finance approval pending'
+			if(order.status == 'New SO'):
+				order.status='Technical approved SO'
+			elif(order.status == 'Finance approval of SO'):
+				order.status = 'Ready for dispatch'
+			else:
+				order.status = 'Dispatch completed'
 			order.save()
-			data=Order.objects.all().filter(status='operations approval pending')
-			return render(request,'operations.html',{'user':user, 'data': data})
+		data1=Order.objects.all().filter(status='New SO')
+		data2=Order.objects.all().filter(status='Finance approval of SO')
+		data3=Order.objects.all().filter(status='Finance cleared for dispatch')
+		return render(request,'operations.html',{'user':user, 'data1': data1, 'data2': data2, 'data3': data3})
 
 
 	if(user.utype=='FIN'):
-		if(request.method=='GET'):
-			data=Order.objects.all().filter(status='finance approval pending')
-			return render(request,'operations.html',{'user':user, 'data': data})
-		else:
+		if(request.method=='POST'):
 			order=Order.objects.all().get(id=request.POST.get('id'))
-			order.status='all approved'
+			if(order.status == 'Technical approved SO'):
+				order.status='Finance approval of SO'	
+			elif(order.status == 'Ready for dispatch'):
+				order.status = 'Finance cleared for dispatch'
+			elif(order.status == 'Dispatch completed'):
+				order.status = 'Final payments received'
+			else:
+				order.status = 'Order closed'
 			order.save()
-			data=Order.objects.all().filter(status='finance approval pending')
-			return render(request,'finance.html',{'user':user, 'data': data})
+		data1=Order.objects.all().filter(status='Technical approved SO')
+		data2=Order.objects.all().filter(status='Ready for dispatch')
+		data3=Order.objects.all().filter(status='Dispatch completed')
+		data4=Order.objects.all().filter(status='Final payments received')
+		return render(request,'finance.html',{'user':user, 'data1': data1, 'data2': data2, 'data3': data3, 'data4':data4})
 		
 	
-	if(user.utype=='CUS'):
+	if(user.utype=='SAL'):
 		if(request.method=='GET'):
 			form=OrderCreationForm()
-			data=request.user.order_set.all()
+			data=Order.objects.all()
 			print(data)
-			return render(request, 'customer.html',{'user':user, 'form':form, 'data': data})
+			return render(request, 'sales.html',{'user':user, 'form':form, 'data': data})
 		else:
 			form=OrderCreationForm(request.POST)
-			order=Order.objects.create(material=form.data.get('product'), quantity=form.data.get('quantity'), client=user)
-			order.save()
+			name = form.data.get('client')
+			if(User.objects.filter(username=name).exists()):
+				order=Order.objects.create(material=form.data.get('product'), quantity=form.data.get('quantity'), client=User.objects.get(username=name))
+				order.save()
 			form=OrderCreationForm()
-			data=request.user.order_set.all()
+			data=Order.objects.all()
 			print(data)
-			return render(request, 'customer.html',{'user':user, 'form':form, 'data': data})
+			return render(request, 'sales.html',{'user':user, 'form':form, 'data': data})
 
 
 
@@ -110,3 +123,8 @@ def user_login(request):
 def user_logout(request):
     logout(request)
     return redirect('login')
+
+def delete_order(request,pk):
+	query = Order.objects.get(pk=pk)
+	query.delete()
+	return redirect('home')
