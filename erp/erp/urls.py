@@ -19,6 +19,9 @@ from login import views as login_view
 from django.conf.urls import url
 from django.contrib.auth import views
 
+admin.site.index_template = 'admin/my_index.html'
+admin.autodiscover()
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', login_view.main, name='main'),

@@ -48,4 +48,7 @@ class CustomUserCreationForm(forms.Form):
 class OrderCreationForm(forms.Form):
     product=forms.CharField(label='product')
     quantity=forms.IntegerField(label='quantity')
+    unit=forms.CharField(label='unit')
+    unit_price=forms.IntegerField(label='unit price')
+    net_price=forms.IntegerField(label='net price')
     client = forms.CharField(label='client')

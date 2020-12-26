@@ -28,7 +28,7 @@ def home(request):
 			order=Order.objects.all().get(id=request.POST.get('id'))
 			order.status='New SO'
 			order.save()
-		data=Order.objects.all().filter(status='new draft')
+		data=Order.objects.all().filter(status='New draft')
 		return render(request,'support.html',{'user':user, 'data': data})
 
 
@@ -70,17 +70,17 @@ def home(request):
 	if(user.utype=='SAL'):
 		if(request.method=='GET'):
 			form=OrderCreationForm()
-			data=Order.objects.all()
+			data=Order.objects.filter(sales=user.username)
 			print(data)
 			return render(request, 'sales.html',{'user':user, 'form':form, 'data': data})
 		else:
 			form=OrderCreationForm(request.POST)
 			name = form.data.get('client')
 			if(User.objects.filter(username=name).exists()):
-				order=Order.objects.create(material=form.data.get('product'), quantity=form.data.get('quantity'), client=User.objects.get(username=name))
+				order=Order.objects.create(material=form.data.get('product'), quantity=form.data.get('quantity'), client=User.objects.get(username=name), sales=user.username, unit=form.data.get('unit'), unit_price=form.data.get('unit_price'), net_price=form.data.get('net_price'))
 				order.save()
 			form=OrderCreationForm()
-			data=Order.objects.all()
+			data=Order.objects.filter(sales=user.username)
 			print(data)
 			return render(request, 'sales.html',{'user':user, 'form':form, 'data': data})
 
@@ -125,6 +125,17 @@ def user_logout(request):
     return redirect('login')
 
 def delete_order(request,pk):
+	user = request.user
 	query = Order.objects.get(pk=pk)
-	query.delete()
+	if(user.utype == 'FIN'):
+		query.status = 'Finance rejected SO'
+		query.save()
+	elif(user.utype == 'OPE'):
+		query.status = 'Technical rejected SO'
+		query.save()
+	elif(user.utype == 'SUP'):
+		query.status = 'Support rejected SO'
+		query.save()
+	elif(user.utpe == 'SAL'):
+		query.delete()
 	return redirect('home')
