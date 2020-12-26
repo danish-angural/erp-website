@@ -1,5 +1,14 @@
-{{user.utype}}<br>
-<p> Welcome {{user.get_full_name}}!!! </p>
+<head>
+<style type="text/css">
+  table,th,td{
+    border: 1px solid black;
+    border-collapse: collapse; 
+    padding: 10px;
+  }
+</style>
+</head>
+<h2>{{user.utype}}</h2>
+<h2> Welcome {{user.get_full_name}}!!! </h2>
 {% block content %}
   <form method="POST">
     {% csrf_token %}
@@ -18,13 +27,24 @@
     <button type="submit">submit</button>
   </form>
   <h3>your previous orders</h3>
+  <table>
+  <tr>
+  <th>Material</th>
+  <th>Quantity</th>
+  <th>Client</th>
+  <th>Net price</th>
+  <th>Status</th>
+  </tr>
   {% for element in data %}
-  {{ element.material }}
-  {{ element.quantity }}
-  {{ element.client }}
-  {{ element.date }}
-  {{ element.status }}
-  <br>
+  <tr>
+  <td>{{ element.material }}</td>
+  <td>{{ element.quantity }}</td>
+  <td>{{ element.client }}</td>
+  <td>{{ element.net_price }}</td>
+  <td>{{ element.status }}</td>
+  </tr>
   {% endfor %}
+  </table>
 {% endblock %}
+<br>
 <a href="{% url 'logout' %}">logout</a>

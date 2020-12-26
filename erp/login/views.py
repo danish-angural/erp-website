@@ -26,10 +26,13 @@ def home(request):
 	if(user.utype=='SUP'):
 		if(request.method=='POST'):
 			order=Order.objects.all().get(id=request.POST.get('id'))
-			order.status='New SO'
+			if(order.status == 'New draft'):
+				order.status='New SO'
 			order.save()
-		data=Order.objects.all().filter(status='New draft')
-		return render(request,'support.html',{'user':user, 'data': data})
+		data1=Order.objects.all().filter(status='New draft')
+		data2=Order.objects.all().filter(status='Technical rejected SO')
+		data3=Order.objects.all().filter(status='Finance rejected SO')
+		return render(request,'support.html',{'user':user, 'data1': data1, 'data2':data2, 'data3':data3})
 
 
 	if(user.utype=='OPE'):
@@ -71,7 +74,6 @@ def home(request):
 		if(request.method=='GET'):
 			form=OrderCreationForm()
 			data=Order.objects.filter(sales=user.username)
-			print(data)
 			return render(request, 'sales.html',{'user':user, 'form':form, 'data': data})
 		else:
 			form=OrderCreationForm(request.POST)
@@ -81,7 +83,6 @@ def home(request):
 				order.save()
 			form=OrderCreationForm()
 			data=Order.objects.filter(sales=user.username)
-			print(data)
 			return render(request, 'sales.html',{'user':user, 'form':form, 'data': data})
 
 
@@ -134,8 +135,19 @@ def delete_order(request,pk):
 		query.status = 'Technical rejected SO'
 		query.save()
 	elif(user.utype == 'SUP'):
-		query.status = 'Support rejected SO'
-		query.save()
-	elif(user.utpe == 'SAL'):
 		query.delete()
 	return redirect('home')
+
+def change_order(request,pk):
+	order = Order.objects.get(pk=pk)
+	if(request.method == 'POST'):
+		form = OrderCreationForm(request.POST)
+		name = form.data.get('client')
+		user = request.user
+		sales = order.sales
+		order.delete()
+		order=Order.objects.create(material=form.data.get('product'), quantity=form.data.get('quantity'), client=User.objects.get(username=name), sales=sales, unit=form.data.get('unit'), unit_price=form.data.get('unit_price'), net_price=form.data.get('net_price'))
+		order.save()
+		return redirect('home')
+	form = OrderCreationForm(initial={'product':order.material,'quantity':order.quantity, 'unit':order.unit, 'unit_price':order.unit_price, 'net_price':order.net_price, 'client':order.client.username})
+	return render(request, 'change.html', {'form':form, 'data':order})
