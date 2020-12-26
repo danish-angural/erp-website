@@ -30,4 +30,5 @@ urlpatterns = [
     path('login/', login_view.user_login, name='login'),
     path('logout/', login_view.user_logout, name='logout'),
     url(r'^delete_order/(?P<pk>\d+)/$', login_view.delete_order, name='delete_order'),
+    url(r'^change_order/(?P<pk>\d+)/$', login_view.change_order, name='change_order'),
 ]

@@ -1,15 +1,78 @@
-{{user.utype}}<br>
-Welcome {{user.get_full_name}}!!!<br>
-{% for element in data %}<br>
-data: {{ element.material }}<br>
-quantity: {{ element.quantity }}<br>
-date: {{ element.date }}<br>
+<head>
+<style type="text/css">
+  table,th,td{
+    border: 1px solid black;
+    border-collapse: collapse; 
+    padding: 10px;
+  }
+</style>
+</head>
+<h2>{{user.utype}}</h2>
+<h2>Welcome {{user.get_full_name}}!!!</h2>
+<h3>New Drafts to be approved</h3>
+<table>
+  <tr>
+  <th>Material</th>
+  <th>Quantity</th>
+  <th>Net price</th>
+  <th>Approve</th>
+  <th>Remove</th>
+  </tr>
+{% for element in data1 %}
+<tr>
+<td> {{ element.material }}</td>
+<td> {{ element.quantity }}</td>
+<td> {{ element.net_price }}</td>
+<td>
 <form method='POST'>
     {% csrf_token %}
     <input hidden value={{element.id}} name="id">
     <button type="submit"> approve</button>
 </form>
-<a href="{% url 'delete_order' element.id %}">remove</a>
+</td>
+<td><a href="{% url 'delete_order' element.id %}">remove</a></td>
+</tr>
 {% endfor %}
+</table>
+
+<h3>Recheck the technical rejected SOs</h3>
+
+<table>
+  <tr>
+  <th>Material</th>
+  <th>Quantity</th>
+  <th>Net price</th>
+  <th>Revise</th>
+  <th>Remove</th>
+  </tr>
+{% for element in data2 %}
+<tr>
+<td>{{ element.material }}</td>
+<td>quantity: {{ element.quantity }}</td>
+<td>date: {{ element.net_price }}</td>
+<td><a href="{% url 'change_order' element.id %}">revise</a></td>
+<td><a href="{% url 'delete_order' element.id %}">remove</a></td>
+</tr>
+{% endfor %}
+</table>
+<h3>Recheck the finance rejected SOs</h3>
+<table>
+  <tr>
+  <th>Naterial</th>
+  <th>Quantity</th>
+  <th>Net price</th>
+  <th>Revise</th>
+  <th>Remove</th>
+  </tr>
+{% for element in data3 %}
+<tr>
+<td> {{ element.material }}</td>
+<td> {{ element.quantity }}</td>
+<td> {{ element.date }}</td>
+<td><a href="{% url 'change_order' element.id %}">revise</a></td>
+<td><a href="{% url 'delete_order' element.id %}">remove</a></td>
+</tr>
+{% endfor %}
+</table>
 <br>
 <a href="{% url 'logout' %}">logout</a>
