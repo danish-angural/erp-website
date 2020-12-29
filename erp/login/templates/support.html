@@ -30,7 +30,7 @@
     <button type="submit"> approve</button>
 </form>
 </td>
-<td><a href="{% url 'delete_order' element.id %}">remove</a></td>
+<td><a href="{% url 'delete_order' element.id %}"><button>remove</button></a></td>
 </tr>
 {% endfor %}
 </table>
@@ -50,8 +50,8 @@
 <td>{{ element.material }}</td>
 <td>quantity: {{ element.quantity }}</td>
 <td>date: {{ element.net_price }}</td>
-<td><a href="{% url 'change_order' element.id %}">revise</a></td>
-<td><a href="{% url 'delete_order' element.id %}">remove</a></td>
+<td><a href="{% url 'change_order' element.id %}"><button>revise</button></a></td>
+<td><a href="{% url 'delete_order' element.id %}"><button>remove</button></a></td>
 </tr>
 {% endfor %}
 </table>
@@ -69,10 +69,10 @@
 <td> {{ element.material }}</td>
 <td> {{ element.quantity }}</td>
 <td> {{ element.date }}</td>
-<td><a href="{% url 'change_order' element.id %}">revise</a></td>
-<td><a href="{% url 'delete_order' element.id %}">remove</a></td>
+<td><a href="{% url 'change_order' element.id %}"><button>revise</button></a></td>
+<td><a href="{% url 'delete_order' element.id %}"><button>remove</button></a></td>
 </tr>
 {% endfor %}
 </table>
 <br>
-<a href="{% url 'logout' %}">logout</a>
+<a href="{% url 'logout' %}"><button>logout</button></a>
