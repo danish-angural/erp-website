@@ -1,4 +1,4 @@
-{{user.utype}}<br>
-Welcome {{user.get_full_name}}!!!<br>
-<a href="{% url 'admin:index' %}">view orders and staff</a><br>
-<a href="{% url 'logout' %}">logout</a>
+<h2>{{user.utype}}</h2>
+<h2>Welcome {{user.get_full_name}}!!!</h2>
+<a href="{% url 'admin:index' %}"><button>view orders and staff</button></a><br><br>
+<a href="{% url 'logout' %}"><button>logout</button></a>

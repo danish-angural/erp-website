@@ -30,7 +30,7 @@
     <button type="submit"> approve</button>
 </form>
 </td>
-<td><a href="{% url 'delete_order' element.id %}">remove</a></td>
+<td><a href="{% url 'delete_order' element.id %}"><button>remove</button></a></td>
 </tr>
 {% endfor %}
 </table>
@@ -104,4 +104,4 @@
 {% endfor %}
 </table>
 <br>
-<a href="{% url 'logout' %}">logout</a>
+<a href="{% url 'logout' %}"><button>logout</button></a>
