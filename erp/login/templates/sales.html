@@ -5,6 +5,23 @@
     border-collapse: collapse; 
     padding: 10px;
   }
+  .notify {
+  position: absolute;
+  top:10px;
+  right:100px;
+}
+
+.cont {
+  display: none;
+  position: absolute;
+  min-width: 250px;
+}
+
+.cont a {
+  display: block;
+  text-decoration: none;
+}
+.notify:hover .cont {display: block;}
 </style>
 </head>
 <h2>{{user.utype}}</h2>
@@ -48,3 +65,12 @@
 {% endblock %}
 <br>
 <a href="{% url 'logout' %}"><button>logout</button></a>
+<div class="notify">
+<button class="drop">Notifications</button>
+<div class="cont">
+  {% for msg in notifications %}
+  <a href="{% url 'notify' msg.id %}">{{ msg.user }} has {{msg.apprej}} the {{msg.order.material}} and the present status is {{msg.order.status}}</a>
+  {% endfor %}
+</div>
+</div>
+

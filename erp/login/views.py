@@ -6,7 +6,7 @@ from django.http import HttpResponse
 #from django.contrib.auth.models import User
 from django.urls import reverse
 from . import models
-from . models import User, Order
+from . models import User, Order, Notifications
 # Create your views here.
 def main(request):
     return render(request, 'main.html',{})
@@ -14,25 +14,20 @@ def main(request):
 def home(request):
 	user=request.user
 	if(user and user.utype=='PER'):
-	 	return render(request,'superuser.html',{'user':user})
-	'''
-	if(user.utype=='SAL'):
-		if(request.method=='GET'):
-			data=Order.objects.all().filter(status='all approval pending')
-			return render(request,'sales.html',{'user':user, 'data': data})
-		else:
-			pass
-	'''		
+	 	return render(request,'superuser.html',{'user':user, 'notifications':notify})
 	if(user.utype=='SUP'):
 		if(request.method=='POST'):
 			order=Order.objects.all().get(id=request.POST.get('id'))
 			if(order.status == 'New draft'):
 				order.status='New SO'
 			order.save()
+			for each in User.objects.all():
+				Notifications.objects.create(order=order,user=user, recipient=each.id)
 		data1=Order.objects.all().filter(status='New draft')
 		data2=Order.objects.all().filter(status='Technical rejected SO')
 		data3=Order.objects.all().filter(status='Finance rejected SO')
-		return render(request,'support.html',{'user':user, 'data1': data1, 'data2':data2, 'data3':data3})
+		notify = Notifications.objects.filter(recipient = user.id).order_by('date').reverse()
+		return render(request,'support.html',{'user':user, 'data1': data1, 'data2':data2, 'data3':data3, 'notifications':notify})
 
 
 	if(user.utype=='OPE'):
@@ -45,10 +40,13 @@ def home(request):
 			else:
 				order.status = 'Dispatch completed'
 			order.save()
+			for each in User.objects.all():
+				Notifications.objects.create(order=order,user=user, recipient=each.id)
 		data1=Order.objects.all().filter(status='New SO')
 		data2=Order.objects.all().filter(status='Finance approval of SO')
 		data3=Order.objects.all().filter(status='Finance cleared for dispatch')
-		return render(request,'operations.html',{'user':user, 'data1': data1, 'data2': data2, 'data3': data3})
+		notify = Notifications.objects.filter(recipient = user.id).order_by('date').reverse()
+		return render(request,'operations.html',{'user':user, 'data1': data1, 'data2': data2, 'data3': data3, 'notifications':notify})
 
 
 	if(user.utype=='FIN'):
@@ -63,27 +61,34 @@ def home(request):
 			else:
 				order.status = 'Order closed'
 			order.save()
+			for each in User.objects.all():
+				Notifications.objects.create(order=order,user=user, recipient=each.id)
 		data1=Order.objects.all().filter(status='Technical approved SO')
 		data2=Order.objects.all().filter(status='Ready for dispatch')
 		data3=Order.objects.all().filter(status='Dispatch completed')
 		data4=Order.objects.all().filter(status='Final payments received')
-		return render(request,'finance.html',{'user':user, 'data1': data1, 'data2': data2, 'data3': data3, 'data4':data4})
+		notify = Notifications.objects.filter(recipient = user.id).order_by('date').reverse()
+		return render(request,'finance.html',{'user':user, 'data1': data1, 'data2': data2, 'data3': data3, 'data4':data4, 'notifications':notify})
 		
 	
 	if(user.utype=='SAL'):
 		if(request.method=='GET'):
 			form=OrderCreationForm()
 			data=Order.objects.filter(sales=user.username)
-			return render(request, 'sales.html',{'user':user, 'form':form, 'data': data})
+			notify = Notifications.objects.filter(recipient = user.id).order_by('date').reverse()
+			return render(request, 'sales.html',{'user':user, 'form':form, 'data': data, 'notifications':notify})
 		else:
 			form=OrderCreationForm(request.POST)
 			name = form.data.get('client')
 			if(User.objects.filter(username=name).exists()):
 				order=Order.objects.create(material=form.data.get('product'), quantity=form.data.get('quantity'), client=User.objects.get(username=name), sales=user.username, unit=form.data.get('unit'), unit_price=form.data.get('unit_price'), net_price=form.data.get('net_price'))
 				order.save()
+				for each in User.objects.all():
+					Notifications.objects.create(order=order,user=user, recipient=each.id)
 			form=OrderCreationForm()
 			data=Order.objects.filter(sales=user.username)
-			return render(request, 'sales.html',{'user':user, 'form':form, 'data': data})
+			notify = Notifications.objects.filter(recipient = user.id).order_by('date').reverse()
+			return render(request, 'sales.html',{'user':user, 'form':form, 'data': data, 'notifications':notify})
 
 
 
@@ -131,9 +136,13 @@ def delete_order(request,pk):
 	if(user.utype == 'FIN'):
 		query.status = 'Finance rejected SO'
 		query.save()
+		for each in User.objects.all():
+				Notifications.objects.create(order=query,user=user, recipient=each.id)
 	elif(user.utype == 'OPE'):
 		query.status = 'Technical rejected SO'
 		query.save()
+		for each in User.objects.all():
+				Notifications.objects.create(order=query,user=user, recipient=each.id)
 	elif(user.utype == 'SUP'):
 		query.delete()
 	return redirect('home')
@@ -151,3 +160,8 @@ def change_order(request,pk):
 		return redirect('home')
 	form = OrderCreationForm(initial={'product':order.material,'quantity':order.quantity, 'unit':order.unit, 'unit_price':order.unit_price, 'net_price':order.net_price, 'client':order.client.username})
 	return render(request, 'change.html', {'form':form, 'data':order})
+
+def notify_delete(request,pk):
+	query = Notifications.objects.get(pk=pk)
+	query.delete()
+	return redirect('home')

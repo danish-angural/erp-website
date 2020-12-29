@@ -15,3 +15,10 @@ class Order(models.Model):
 	date=models.DateTimeField(auto_now=True)
 	client=models.ForeignKey(User, on_delete=models.CASCADE, null=True)
 	sales = models.CharField(max_length=100, default='no sales')
+
+class Notifications(models.Model):
+	order = models.ForeignKey(Order, on_delete=models.CASCADE, null=True)
+	user = models.CharField(max_length=50)
+	recipient = models.CharField(max_length=50)
+	date = models.DateTimeField(auto_now=True)
+	apprej = models.CharField(max_length=10, default='approved')
