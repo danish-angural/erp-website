@@ -16,9 +16,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from login import views as login_view
-from django.conf.urls import url
+from django.conf.urls import include, url
 from django.contrib.auth import views
-
+import notifications.urls
 admin.site.index_template = 'admin/my_index.html'
 admin.autodiscover()
 
@@ -31,5 +31,4 @@ urlpatterns = [
     path('logout/', login_view.user_logout, name='logout'),
     url(r'^delete_order/(?P<pk>\d+)/$', login_view.delete_order, name='delete_order'),
     url(r'^change_order/(?P<pk>\d+)/$', login_view.change_order, name='change_order'),
-    url(r'^notify/(?P<pk>\d+)/$', login_view.notify_delete, name='notify'),
-]
+    url('^inbox/notifications/', include(notifications.urls, namespace='notifications')),]

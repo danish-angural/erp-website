@@ -1,3 +1,5 @@
+{% load notifications_tags %}
+{% load static %}
 <head>
 <style type="text/css">
   table,th,td{
@@ -123,11 +125,6 @@
 </table>
 <br>
 <a href="{% url 'logout' %}"><button>logout</button></a>
-<div class="notify">
-<button class="drop">Notifications</button>
-<div class="cont">
-	{% for msg in notifications %}
-	<a href="{% url 'notify' msg.id %}">{{ msg.user }} has {{msg.apprej}} the {{msg.order.material}} and the present status is {{msg.order.status}}</a>
-	{% endfor %}
-</div>
-</div>
+<<script src="{% static 'notifications/notify.js' %}" type="text/javascript"></script>
+{% register_notify_callbacks callbacks='fill_notification_list,fill_notification_badge' %}
+{% live_notify_list%}
