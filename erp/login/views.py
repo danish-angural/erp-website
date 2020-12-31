@@ -7,8 +7,8 @@ from django.http import HttpResponse
 from django.urls import reverse
 from . models import User, Order
 from notifications.signals import notify
-
 # Create your views here.
+from datetime import date, time
 def main(request):
     return render(request, 'main.html',{})
 
@@ -22,7 +22,7 @@ def home(request):
 			if(order.status == 'New draft'):
 				order.status='New SO'
 			order.save()
-			notify.send({'order': order}, sender=request.user, recipient=User.objects.filter(utype='OPE'), verb='approved')
+			notify.send(sender=request.user, recipient=User.objects.all(), verb=user.username+'approved order'+str(order.id)+'on' +date.today().strftime("%B %d, %Y")+ 'to status'+order.status)
 		data1=Order.objects.all().filter(status='New draft')
 		data2=Order.objects.all().filter(status='Technical rejected SO')
 		data3=Order.objects.all().filter(status='Finance rejected SO')
@@ -39,7 +39,7 @@ def home(request):
 			else:
 				order.status = 'Dispatch completed'
 			order.save()
-			notify.send(sender=request.user, recipient=request.user, verb='hello')
+			notify.send(sender=request.user, recipient=User.objects.all(), verb=user.username+'approved order'+str(order.id)+'on' +date.today().strftime("%B %d, %Y")+ 'to status'+order.status)
 		data1=Order.objects.all().filter(status='New SO')
 		data2=Order.objects.all().filter(status='Finance approval of SO')
 		data3=Order.objects.all().filter(status='Finance cleared for dispatch')
@@ -58,7 +58,7 @@ def home(request):
 			else:
 				order.status = 'Order closed'
 			order.save()
-			notify.send(sender=request.user, recipient=request.user, verb='hello')
+			notify.send(sender=request.user, recipient=User.objects.all(), verb=user.username+'approved order'+str(order.id)+'on' +date.today().strftime("%B %d, %Y")+ 'to status'+order.status)
 		data1=Order.objects.all().filter(status='Technical approved SO')
 		data2=Order.objects.all().filter(status='Ready for dispatch')
 		data3=Order.objects.all().filter(status='Dispatch completed')
@@ -77,7 +77,7 @@ def home(request):
 			if(User.objects.filter(username=name).exists()):
 				order=Order.objects.create(material=form.data.get('product'), quantity=form.data.get('quantity'), client=User.objects.get(username=name), sales=user.username, unit=form.data.get('unit'), unit_price=form.data.get('unit_price'), net_price=form.data.get('net_price'))
 				order.save()
-			notify.send(sender=request.user, recipient=request.user, verb='hello')
+			notify.send(sender=request.user, recipient=User.objects.all(), verb=' approved order number '+str(order.id)+' on ' +date.today().strftime("%B %d, %Y")+ ' to status '+order.status)
 			form=OrderCreationForm()
 			data=Order.objects.filter(sales=user.username)
 			return render(request, 'sales.html',{'user':user, 'form':form, 'data': data, 'notifications':request.user.notifications.all()})
