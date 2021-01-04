@@ -19,6 +19,8 @@ from login import views as login_view
 from django.conf.urls import include, url
 from django.contrib.auth import views
 import notifications.urls
+from django.conf import settings
+from django.conf.urls.static import static
 admin.site.index_template = 'admin/my_index.html'
 admin.autodiscover()
 
@@ -31,4 +33,5 @@ urlpatterns = [
     path('logout/', login_view.user_logout, name='logout'),
     url(r'^delete_order/(?P<pk>\d+)/$', login_view.delete_order, name='delete_order'),
     url(r'^change_order/(?P<pk>\d+)/$', login_view.change_order, name='change_order'),
-    url('^inbox/notifications/', include(notifications.urls, namespace='notifications')),]
+    url('^inbox/notifications/', include(notifications.urls, namespace='notifications')),
+]  + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
