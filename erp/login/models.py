@@ -4,6 +4,7 @@ from django.contrib.auth.models import AbstractUser
 
 class User(AbstractUser):
 	utype = models.CharField(max_length = 3, default = 'SAL', editable = True)
+	approved = models.CharField(max_length=3, default='NO', editable=True)
 
 class Order(models.Model):
 	status=models.CharField(default='New draft', max_length=100)
@@ -16,3 +17,7 @@ class Order(models.Model):
 	client=models.ForeignKey(User, on_delete=models.CASCADE, null=True)
 	sales = models.CharField(max_length=100, default='no sales')
 
+class Details(models.Model):
+	order = models.ForeignKey(Order, on_delete=models.CASCADE, null=True)
+	date = models.DateTimeField(auto_now=True)
+	status=models.CharField(default='New draft', max_length=100)
