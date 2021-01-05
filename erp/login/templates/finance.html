@@ -37,20 +37,16 @@
   <th>Net price</th>
   <th>Approve</th>
   <th>Remove</th>
+  <th>View details</th>
   </tr>
 {% for element in data1 %}
 <tr>
 <td> {{ element.material }}</td>
 <td> {{ element.quantity }}</td>
 <td> {{ element.net_price }}</td>
-<td>
-<form method='POST'>
-    {% csrf_token %}
-    <input hidden value={{element.id}} name="id">
-    <button type="submit"> approve</button>
-</form>
-</td>
+<td><a href="{% url 'approve_order' element.id %}"><button>Approve</button></a></td>
 <td><a href="{% url 'delete_order' element.id %}"><button>remove</button></a></td>
+<td><a href="{% url 'view_details' element.id %}"><button>View details</button></a></td>
 </tr>
 {% endfor %}
 </table>
@@ -61,19 +57,15 @@
   <th>Quantity</th>
   <th>Net price</th>
   <th>Approve</th>
+  <th>View details</th>
   </tr>
 {% for element in data2 %}
 <tr>
 <td> {{ element.material }}</td>
 <td> {{ element.quantity }}</td>
 <td> {{ element.net_price }}</td>
-<td>
-<form method='POST'>
-    {% csrf_token %}
-    <input hidden value={{element.id}} name="id">
-    <button type="submit"> approve</button>
-</form>
-</td>
+<td><a href="{% url 'approve_order' element.id %}"><button>Approve</button></a></td>
+<td><a href="{% url 'view_details' element.id %}"><button>View details</button></a></td>
 </tr>
 {% endfor %}
 </table>
@@ -84,19 +76,15 @@
   <th>Quantity</th>
   <th>Net price</th>
   <th>Approve</th>
+  <th>View details</th>
   </tr>
 {% for element in data3 %}
 <tr>
 <td> {{ element.material }}</td>
 <td> {{ element.quantity }}</td>
 <td> {{ element.net_price }}</td>
-<td>
-<form method='POST'>
-    {% csrf_token %}
-    <input hidden value={{element.id}} name="id">
-    <button type="submit"> approve</button>
-</form>
-</td>
+<td><a href="{% url 'approve_order' element.id %}"><button>Approve</button></a></td>
+<td><a href="{% url 'view_details' element.id %}"><button>View details</button></a></td>
 </tr>
 {% endfor %}
 </table>
@@ -107,19 +95,45 @@
   <th>Quantity</th>
   <th>Net price</th>
   <th>Approve</th>
+  <th>View details</th>
   </tr>
 {% for element in data4 %}
 <tr>
 <td> {{ element.material }}</td>
 <td> {{ element.quantity }}</td>
 <td> {{ element.net_price }}</td>
-<td>
-<form method='POST'>
-    {% csrf_token %}
-    <input hidden value={{element.id}} name="id">
-    <button type="submit"> approve</button>
-</form>
-</td>
+<td><a href="{% url 'approve_order' element.id %}"><button>Approve</button></a></td>
+<td><a href="{% url 'view_details' element.id %}"><button>View details</button></a></td>
+</tr>
+{% endfor %}
+</table>
+<h3>Apporval to user</h3>
+<table>
+  <tr>
+  <th>Username</th>
+  <th>Firstname</th>
+  <th>Lastname</th>
+  <th>Approve</th>
+  </tr>
+{% for element in data5 %}
+<tr>
+<td> {{ element.username }}</td>
+<td> {{ element.first_name }}</td>
+<td> {{ element.last_name }}</td>
+<td><a href="{% url 'approve_user' element.id %}"><button>Approve</button></a></td>
+</tr>
+{% endfor %}
+</table>
+<h3>Status count</h3>
+<table>
+  <tr>
+  <th>Status</th>
+  <th>Count</th>
+  </tr>
+{% for key,value in num.items %}
+<tr>
+<td> {{ key }}</td>
+<td> {{ value }}</td>
 </tr>
 {% endfor %}
 </table>
