@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'login',
     'notifications',
+    # 'channels',
+    # 'django_live_templates'
 ]
 
 MIDDLEWARE = [
@@ -123,3 +125,12 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 DJANGO_NOTIFICATIONS_CONFIG = { 'USE_JSONFIELD': True}
+# CACHES = {
+#     'django-live-templates': {
+#         'BACKEND': 'django_redis.cache.RedisCache',
+#         'LOCATION': 'redis://localhost:6379/0',
+#         'OPTIONS': {
+#             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+#         }
+#     }
+# }
