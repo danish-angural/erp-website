@@ -1,6 +1,11 @@
 {% load notifications_tags %}
 {% load static %}
 <head>
+  <script>
+    setTimeout(function(){
+        location.reload();
+    },5000); // 5000 milliseconds means 5 seconds.
+ </script>
 <style type="text/css">
   table,th,td{
     border: 1px solid black;
@@ -140,5 +145,5 @@
 <br>
 <a href="{% url 'logout' %}"><button>logout</button></a>
 <script src="{% static 'notifications/notify.js' %}" type="text/javascript"></script>
-{% register_notify_callbacks callbacks='fill_notification_list,fill_notification_badge' %}
+{% register_notify_callbacks callbacks='fill_notification_list,fill_notification_badge' fetch='100' %}
 {% live_notify_list%}

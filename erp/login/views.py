@@ -26,19 +26,19 @@ def home(request):
 	num['Technical rejected SO'] =  Order.objects.filter(status='Technical rejected SO').count()
 	num['New draft'] =  Order.objects.filter(status='Finance rejected SO').count()
 	if(user and user.utype=='PER'):
-	 	return render(request,'superuser.html',{'user':user, 'notifications':request.user.notifications.all()})
+	 	return render(request,'superuser.html',context={'user':user, 'notifications':request.user.notifications.all()})
 	if(user.utype=='SUP'):
 		data1=Order.objects.all().filter(status='New draft')
 		data2=Order.objects.all().filter(status='Technical rejected SO')
 		data3=Order.objects.all().filter(status='Finance rejected SO')
-		return render(request,'support.html',{'user':user, 'data1': data1, 'data2':data2, 'data3':data3, 'num':num, 'notifications':request.user.notifications.all()})
+		return render(request,'support.html',context={'user':user, 'data1': data1, 'data2':data2, 'data3':data3, 'num':num, 'notifications':request.user.notifications.all()})
 
 
 	if(user.utype=='OPE'):
 		data1=Order.objects.all().filter(status='New SO')
 		data2=Order.objects.all().filter(status='Finance approval of SO')
 		data3=Order.objects.all().filter(status='Finance cleared for dispatch')
-		return render(request,'operations.html',{'user':user, 'data1': data1, 'data2': data2, 'data3': data3, 'num':num, 'notifications':request.user.notifications.all()})
+		return render(request,'operations.html',context={'user':user, 'data1': data1, 'data2': data2, 'data3': data3, 'num':num, 'notifications':request.user.notifications.all()})
 
 
 	if(user.utype=='FIN'):
@@ -47,14 +47,14 @@ def home(request):
 		data3=Order.objects.all().filter(status='Dispatch completed')
 		data4=Order.objects.all().filter(status='Final payments received')
 		data5=User.objects.all().filter(approved='NO')
-		return render(request,'finance.html',{'user':user, 'data1': data1, 'data2': data2, 'data3': data3, 'data4':data4, 'data5': data5, 'num':num, 'notifications':request.user.notifications.all()})
+		return render(request,'finance.html',context={'user':user, 'data1': data1, 'data2': data2, 'data3': data3, 'data4':data4, 'data5': data5, 'num':num, 'notifications':request.user.notifications.all()})
 		
 	
 	if(user.utype=='SAL'):
 		if(request.method=='GET'):
 			form=OrderCreationForm()
 			data=Order.objects.filter(sales=user.username)
-			return render(request, 'sales.html',{'user':user, 'form':form, 'data': data, 'notifications':request.user.notifications.all()})
+			return render(request, 'sales.html',context={'user':user, 'form':form, 'data': data, 'notifications':request.user.notifications.all()})
 		else:
 			form=OrderCreationForm(request.POST)
 			name = form.data.get('client')
@@ -64,7 +64,7 @@ def home(request):
 				notify.send(sender=request.user, recipient=User.objects.all().filter(approved='Yes'), verb=user.username+' approved '+order.material+' on ' +date.today().strftime("%B %d, %Y")+ ' to status '+order.status)
 			form=OrderCreationForm()
 			data=Order.objects.filter(sales=user.username)
-			return render(request, 'sales.html',{'user':user, 'form':form, 'data': data, 'notifications':request.user.notifications.all()})
+			return render(request, 'sales.html',context={'user':user, 'form':form, 'data': data, 'notifications':request.user.notifications.all()})
 
 
 
