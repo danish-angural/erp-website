@@ -36,5 +36,6 @@ urlpatterns = [
     url(r'^approve_order/(?P<pk>\d+)/$', login_view.approve_order, name='approve_order'),
     url(r'^change_order/(?P<pk>\d+)/$', login_view.change_order, name='change_order'),
     url(r'^view_details/(?P<pk>\d+)/$', login_view.view_details, name='view_details'),
+    url(r'^download_customer_details/$', login_view.download_customer_details, name='download_customer_details'),
     url('^inbox/notifications/', include(notifications.urls, namespace='notifications')),
 ]  + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

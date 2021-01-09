@@ -1,3 +1,4 @@
+import csv
 from django.contrib.auth import logout, login, authenticate,forms
 from django.shortcuts import render, redirect
 from .forms import CustomUserCreationForm, OrderCreationForm
@@ -9,6 +10,7 @@ from . models import User, Order, Details
 from notifications.signals import notify
 # Create your views here.
 from datetime import date, time
+import tempfile
 def main(request):
     return render(request, 'main.html',{})
 
@@ -177,3 +179,11 @@ def view_details(request,pk):
 	order = Order.objects.get(pk=pk)
 	details = Details.objects.filter(order=order)
 	return render(request,'view_details.html',{'details':details, 'order':order})
+
+def download_customer_details(request):
+	with tempfile.NamedTemporaryFile(name='customer_data.csv') as file:
+		writer=csv.writer(file)
+		for customers in User.objects.all().filter(utype='CUS'):
+			row=''
+			for field in customers
+
