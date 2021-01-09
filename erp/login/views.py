@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import csv
 from django.contrib.auth import logout, login, authenticate,forms
 from django.shortcuts import render, redirect
@@ -181,9 +182,43 @@ def view_details(request,pk):
 	return render(request,'view_details.html',{'details':details, 'order':order})
 
 def download_customer_details(request):
-	with tempfile.NamedTemporaryFile(name='customer_data.csv') as file:
-		writer=csv.writer(file)
-		for customers in User.objects.all().filter(utype='CUS'):
-			row=''
-			for field in customers
+	response = HttpResponse(content_type='text/csv')
+	response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
+
+	writer = csv.writer(response)
+	writer.writerow([element.name for element in User._meta.fields])
+	for customer in User.objects.all().filter(utype='CUS'):
+		row=[]
+		for field in customer._meta.fields:
+			row.append(str(getattr(customer, field.name)))
+		writer.writerow(row)
+	return response
+
+def download_specific_order_details(request, id):
+	response = HttpResponse(content_type='text/csv')
+	response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
+
+	writer = csv.writer(response)
+	writer.writerow([element.name for element in Order._meta.fields])
+	client=User.objects.all().get(id=id)
+	print(client.order_set.all())
+	for order in client.order_set.all():
+		row=[]
+		for field in order._meta.fields:
+			row.append(str(getattr(order, field.name)))
+		writer.writerow(row)
+	return(response)
+def download_order_details(request):
+	response = HttpResponse(content_type='text/csv')
+	response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
+
+	writer = csv.writer(response)
+	writer.writerow([element.name for element in Order._meta.fields])
+	for order in Order.objects.all():
+		row=[]
+		for field in order._meta.fields:
+			row.append(str(getattr(order, field.name)))
+		writer.writerow(row)
+	return response
+
 
