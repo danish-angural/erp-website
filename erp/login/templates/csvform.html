@@ -1,5 +1,8 @@
 <form method="POST" enctype="multipart/form-data">
     {% csrf_token %}
+    order in csv:
+    <br>
+    id, status, material, quantity, unit, unit_price, net_price, date, client, sales
     <form method="POST">
         <input type="file" name="csvfile">
         <button type="submit">submit</button>
