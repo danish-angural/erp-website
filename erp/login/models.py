@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractUser
 
 
 class User(AbstractUser):
-	utype = models.CharField(max_length = 3, default = 'SAL', editable = True)
+	utype = models.CharField(max_length = 3, default = 'CUS', editable = True)
 	approved = models.CharField(max_length=3, default='NO', editable=True)
 
 class Order(models.Model):
@@ -13,7 +13,7 @@ class Order(models.Model):
 	unit=models.CharField(max_length=10,default='m')
 	unit_price = models.IntegerField(default=0)
 	net_price = models.IntegerField(default=0)
-	date=models.DateTimeField(auto_now=True)
+	date=models.DateTimeField(auto_now=True, editable=True)
 	client=models.ForeignKey(User, on_delete=models.CASCADE, null=True)
 	sales = models.CharField(max_length=100, default='no sales')
 

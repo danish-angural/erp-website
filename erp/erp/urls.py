@@ -40,4 +40,6 @@ urlpatterns = [
     url(r'^download_order_details/(?P<id>\d+)$', login_view.download_specific_order_details, name='download_specific_order_details'),
     url(r'^download_order_details/$', login_view.download_order_details, name='download_order_details'),
     url('^inbox/notifications/', include(notifications.urls, namespace='notifications')),
+    url(r'^import_order_data/$', login_view.import_order_data, name='import_order_data'),
+    url(r'^import_user_data/$', login_view.import_user_data, name='import_user_data')
 ]  + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

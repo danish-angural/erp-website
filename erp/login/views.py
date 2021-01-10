@@ -1,7 +1,8 @@
 from collections import OrderedDict
-import csv
+import csv, codecs
 from django.contrib.auth import logout, login, authenticate,forms
 from django.shortcuts import render, redirect
+from django.urls.base import clear_script_prefix
 from .forms import CustomUserCreationForm, OrderCreationForm
 from django.contrib.auth import update_session_auth_hash
 from django.http import HttpResponse
@@ -220,5 +221,38 @@ def download_order_details(request):
 			row.append(str(getattr(order, field.name)))
 		writer.writerow(row)
 	return response
+
+def import_order_data(request):
+	if(request.method=="GET"):
+		return render(request, 'csvform.html')
+	else:
+		csv_file=request.FILES['csvfile']
+		if not csv_file.name.endswith('.csv'):
+			return HttpResponse('this is not a csv file')
+		read=csv.reader(codecs.iterdecode(csv_file, 'utf-8'))
+		text=''
+		headers=next(read)
+		for row in read:
+			_, create=Order.objects.get_or_create(id=row[0], status=row[1], material=row[2], quantity=row[3], unit=row[4], unit_price=row[5], net_price=row[6], date=row[7], client=User.objects.all().get(username=row[8]), sales=User.objects.all().get(username=row[9]))
+		return redirect('home')
+
+def import_user_data(request):
+	if(request.method=="GET"):
+		return render(request, 'csvform1.html')
+	else:
+		csv_file=request.FILES['csvfile']
+		if not csv_file.name.endswith('.csv'):
+			return HttpResponse('this is not a csv file')
+		read=csv.reader(codecs.iterdecode(csv_file, 'utf-8'))
+		text=''
+		headers=next(read)
+		for row in read:
+			_, create=User.objects.get_or_create(id=row[0], last_login=row[1], username=row[2], first_name=row[3], last_name=row[4], email=row[5], approved=row[6])
+		return redirect('home')
+			
+
+
+	
+
 
 

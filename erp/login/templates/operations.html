@@ -103,6 +103,8 @@
 {% endfor %}
 </table>
 <br>
+<a href="{% url 'import_order_data'  %}"><button>import_order_data</button></a>
+<a href="{% url 'import_user_data'  %}"><button>import_user_data</button></a>
 <a href="{% url 'download_customer_details'  %}"><button>download_customer_details</button></a>
 <a href="{% url 'download_order_details' %}"><button>download_order_details</button></a>
 <a href="{% url 'download_specific_order_details' 11 %}"><button>download_specific_order_details</button></a>
@@ -110,3 +112,4 @@
 <script src="{% static 'notifications/notify.js' %}" type="text/javascript"></script>
 {% register_notify_callbacks callbacks='fill_notification_list,fill_notification_badge' fetch='100' refresh_period='5' %}
 {% live_notify_list%}
+
