@@ -1,5 +1,7 @@
+import csv, codecs
 from django.contrib.auth import logout, login, authenticate,forms
 from django.shortcuts import render, redirect
+from django.urls.base import clear_script_prefix
 from .forms import CustomUserCreationForm, OrderCreationForm
 from django.contrib.auth import update_session_auth_hash
 from django.http import HttpResponse
@@ -8,12 +10,16 @@ from django.urls import reverse
 from . models import User, Order, Details
 from notifications.signals import notify
 # Create your views here.
-from datetime import date, time
+from datetime import date
+import time
 def main(request):
     return render(request, 'main.html',{})
 
 def home(request):
 	user=request.user
+	if(user and user.utype=='CUS'):
+		logout(request)
+		return redirect('login')
 	num = {}
 	num['New draft'] =  Order.objects.filter(status='New draft').count()
 	num['New SO'] =  Order.objects.filter(status='New SO').count()
@@ -59,12 +65,12 @@ def home(request):
 			form=OrderCreationForm(request.POST)
 			name = form.data.get('client')
 			if(User.objects.filter(username=name).exists()):
-				order=Order.objects.create(material=form.data.get('product'), quantity=form.data.get('quantity'), client=User.objects.get(username=name), sales=user.username, unit=form.data.get('unit'), unit_price=form.data.get('unit_price'), net_price=form.data.get('net_price'))
+				order=Order.objects.create(material=form.data.get('product'), quantity=form.data.get('quantity'), client=User.objects.get(username=name), sales=user.username, unit=form.data.get('unit'), unit_price=form.data.get('unit_price'), net_price=form.data.get('net_price'), optfield1=form.data.get('optfield1'), optfield2=form.data.get('optfield2'), optfield3=form.data.get('optfield3'), optfield4=form.data.get('optfield4'))
 				order.save()
-				notify.send(sender=request.user, recipient=User.objects.all().filter(approved='Yes'), verb=user.username+' approved '+order.material+' on ' +date.today().strftime("%B %d, %Y")+ ' to status '+order.status)
+				notify.send(sender=request.user, recipient=User.objects.all().filter(approved='Yes'), verb=user.username+' approved '+order.material+' on ' +date.today().strftime("%B %d, %Y")+ ' to status '+order.status+' at '+time.strftime("%H:%M:%S", time.localtime(time.time())))
 			form=OrderCreationForm()
 			data=Order.objects.filter(sales=user.username)
-			return render(request, 'sales.html',context={'user':user, 'form':form, 'data': data, 'notifications':request.user.notifications.all()})
+			return redirect('home')
 
 
 
@@ -131,7 +137,7 @@ def change_order(request,pk):
 		user = request.user
 		sales = order.sales
 		order.delete()
-		order=Order.objects.create(material=form.data.get('product'), quantity=form.data.get('quantity'), client=User.objects.get(username=name), sales=sales, unit=form.data.get('unit'), unit_price=form.data.get('unit_price'), net_price=form.data.get('net_price'))
+		order=Order.objects.create(material=form.data.get('product'), quantity=form.data.get('quantity'), client=User.objects.get(username=name), sales=sales, unit=form.data.get('unit'), unit_price=form.data.get('unit_price'), net_price=form.data.get('net_price'), optfield1=form.data.get('optfield1'), optfield2=form.data.get('optfield2'), optfield3=form.data.get('optfield3'), optfield4=form.data.get('optfield4'))
 		order.save()
 		return redirect('home')
 	form = OrderCreationForm(initial={'product':order.material,'quantity':order.quantity, 'unit':order.unit, 'unit_price':order.unit_price, 'net_price':order.net_price, 'client':order.client.username})
@@ -168,7 +174,7 @@ def approve_order(request,pk):
 	elif(order.status == 'Final payments received' and user.utype == 'FIN'):
 		order.status='Order closed'
 	order.save()
-	notify.send(sender=request.user, recipient=User.objects.all().filter(approved='Yes'), verb=user.username+' approved '+order.material+' on ' +date.today().strftime("%B %d, %Y")+ ' to status '+order.status)
+	notify.send(sender=request.user, recipient=User.objects.all().filter(approved='Yes'), verb=user.username+' approved '+order.material+' on ' +date.today().strftime("%B %d, %Y")+ ' to status '+order.status+' at '+time.strftime("%H:%M:%S", time.localtime(time.time())))
 	detail = Details.objects.create(order=order, status=order.status)
 	detail.save()
 	return redirect('home')
@@ -177,3 +183,78 @@ def view_details(request,pk):
 	order = Order.objects.get(pk=pk)
 	details = Details.objects.filter(order=order)
 	return render(request,'view_details.html',{'details':details, 'order':order})
+
+def download_customer_details(request):
+	response = HttpResponse(content_type='text/csv')
+	response['Content-Disposition'] = 'attachment; filename="customer_details.csv"'
+
+	writer = csv.writer(response)
+	writer.writerow(['id', 'last_login', 'username', 'first_name', 'last_name', 'email', 'date_joined', 'approved', 'number_of_orders', 'all_orders'])
+	for customer in User.objects.all().filter(utype='CUS'):
+		row=[]
+		lis='('
+		for order in customer.order_set.all():
+			lis+=str(order.id)+' '
+		lis+=')'
+		row=[customer.id, customer.last_login, customer.username, customer.first_name, customer.last_name, customer.email, customer.date_joined, customer.approved, customer.order_set.count(),lis]
+		writer.writerow(row)
+	return response
+
+def download_specific_order_details(request, id):
+	response = HttpResponse(content_type='text/csv')
+	response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
+
+	writer = csv.writer(response)
+	writer.writerow([element.name for element in Order._meta.fields])
+	client=User.objects.all().get(id=id)
+	print(client.order_set.all())
+	for order in client.order_set.all():
+		row=[]
+		for field in order._meta.fields:
+			if(field.name=='date'):
+				row.append(getattr(order, field.name).strftime('%d-%m-%Y %H:%M:%S'))
+			else:
+				row.append(str(getattr(order, field.name)))
+		writer.writerow(row)
+	return(response)
+def download_order_details(request):
+	response = HttpResponse(content_type='text/csv')
+	response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
+
+	writer = csv.writer(response)
+	writer.writerow([element.name for element in Order._meta.fields])
+	for order in Order.objects.all():
+		row=[]
+		for field in order._meta.fields:
+			if(field.name=='date'):
+				row.append(getattr(order, field.name).strftime('%d-%m-%Y %H:%M:%S'))
+			else:
+				row.append(str(getattr(order, field.name)))
+		writer.writerow(row)
+	return response
+
+def import_order_data(request):
+	if(request.method=="GET"):
+		return render(request, 'csvform.html')
+	else:
+		csv_file=request.FILES['csvfile']
+		if not csv_file.name.endswith('.csv'):
+			return HttpResponse('this is not a csv file')
+		read=csv.reader(codecs.iterdecode(csv_file, 'utf-8'))
+		headers=next(read)
+		for row in read:
+			_, create=Order.objects.get_or_create(id=row[0], status=row[1], material=row[2], quantity=row[3], unit=row[4], unit_price=row[5], net_price=row[6], date=row[7], client=User.objects.all().get(username=row[8]), sales=User.objects.all().get(username=row[9]))
+		return redirect('home')
+
+def import_user_data(request):
+	if(request.method=="GET"):
+		return render(request, 'csvform1.html')
+	else:
+		csv_file=request.FILES['csvfile']
+		if not csv_file.name.endswith('.csv'):
+			return HttpResponse('this is not a csv file')
+		read=csv.reader(codecs.iterdecode(csv_file, 'utf-8'))
+		headers=next(read)
+		for row in read:
+			_, create=User.objects.get_or_create(id=row[0], last_login=row[1], username=row[2], first_name=row[3], last_name=row[4], email=row[5], approved=row[6])
+		return redirect('home')
