@@ -64,10 +64,10 @@ def home(request):
 			if(User.objects.filter(username=name).exists()):
 				order=Order.objects.create(material=form.data.get('product'), quantity=form.data.get('quantity'), client=User.objects.get(username=name), sales=user.username, unit=form.data.get('unit'), unit_price=form.data.get('unit_price'), net_price=form.data.get('net_price'))
 				order.save()
-				notify.send(sender=request.user, recipient=User.objects.all().filter(approved='Yes'), verb=user.username+' approved '+order.material+' on ' +date.today().strftime("%B %d, %Y")+ ' to status '+order.status)
+				notify.send(sender=request.user, recipient=User.objects.all().filter(approved='Yes'), verb=user.username+' approved '+order.material+' on ' +date.today().strftime("%B %d, %Y")+ ' to status '+order.status+' at '+time.strftime("%H:%M:%S", time.localtime(time.time())))
 			form=OrderCreationForm()
 			data=Order.objects.filter(sales=user.username)
-			return render(request, 'sales.html',context={'user':user, 'form':form, 'data': data, 'notifications':request.user.notifications.all()})
+			return redirect('home')
 
 
 
@@ -171,7 +171,7 @@ def approve_order(request,pk):
 	elif(order.status == 'Final payments received' and user.utype == 'FIN'):
 		order.status='Order closed'
 	order.save()
-	notify.send(sender=request.user, recipient=User.objects.all().filter(approved='Yes'), verb=' approved '+order.material+' on ' +date.today().strftime("%B %d, %Y")+ ' to status '+order.status+' at '+time.strftime("%H:%M:%S", time.localtime(time.time())), timestamp=None)
+	notify.send(sender=request.user, recipient=User.objects.all().filter(approved='Yes'), verb=' approved '+order.material+' on ' +date.today().strftime("%B %d, %Y")+ ' to status '+order.status+' at '+time.strftime("%H:%M:%S", time.localtime(time.time())))
 	detail = Details.objects.create(order=order, status=order.status)
 	detail.save()
 	return redirect('home')
@@ -183,7 +183,7 @@ def view_details(request,pk):
 
 def download_customer_details(request):
 	response = HttpResponse(content_type='text/csv')
-	response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
+	response['Content-Disposition'] = 'attachment; filename="customer_details.csv"'
 
 	writer = csv.writer(response)
 	writer.writerow(['id', 'last_login', 'username', 'first_name', 'last_name', 'email', 'date_joined', 'approved', 'number_of_orders', 'all_orders'])
@@ -198,7 +198,7 @@ def download_customer_details(request):
 
 def download_specific_order_details(request, id):
 	response = HttpResponse(content_type='text/csv')
-	response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
+	response['Content-Disposition'] = 'attachment; filename="specific_order_details.csv"'
 
 	writer = csv.writer(response)
 	writer.writerow([element.name for element in Order._meta.fields])
@@ -215,7 +215,7 @@ def download_specific_order_details(request, id):
 	return(response)
 def download_order_details(request):
 	response = HttpResponse(content_type='text/csv')
-	response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
+	response['Content-Disposition'] = 'attachment; filename="order_details.csv"'
 
 	writer = csv.writer(response)
 	writer.writerow([element.name for element in Order._meta.fields])
