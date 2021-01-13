@@ -1,4 +1,3 @@
-from collections import OrderedDict
 import csv, codecs
 from django.contrib.auth import logout, login, authenticate,forms
 from django.shortcuts import render, redirect
@@ -11,8 +10,8 @@ from django.urls import reverse
 from . models import User, Order, Details
 from notifications.signals import notify
 # Create your views here.
-from datetime import date, time
-import tempfile
+from datetime import date
+import time
 def main(request):
     return render(request, 'main.html',{})
 
@@ -172,7 +171,7 @@ def approve_order(request,pk):
 	elif(order.status == 'Final payments received' and user.utype == 'FIN'):
 		order.status='Order closed'
 	order.save()
-	notify.send(sender=request.user, recipient=User.objects.all().filter(approved='Yes'), verb=user.username+' approved '+order.material+' on ' +date.today().strftime("%B %d, %Y")+ ' to status '+order.status)
+	notify.send(sender=request.user, recipient=User.objects.all().filter(approved='Yes'), verb=' approved '+order.material+' on ' +date.today().strftime("%B %d, %Y")+ ' to status '+order.status+' at '+time.strftime("%H:%M:%S", time.localtime(time.time())), timestamp=None)
 	detail = Details.objects.create(order=order, status=order.status)
 	detail.save()
 	return redirect('home')
@@ -187,11 +186,13 @@ def download_customer_details(request):
 	response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
 
 	writer = csv.writer(response)
-	writer.writerow([element.name for element in User._meta.fields])
+	writer.writerow(['id', 'last_login', 'username', 'first_name', 'last_name', 'email', 'date_joined', 'approved', 'number_of_orders', 'all_orders'])
 	for customer in User.objects.all().filter(utype='CUS'):
-		row=[]
-		for field in customer._meta.fields:
-			row.append(str(getattr(customer, field.name)))
+		lis='('
+		for order in customer.order_set.all():
+			lis+=str(order.id)+' '
+		lis+=')'
+		row=[customer.id, customer.last_login, customer.username, customer.first_name, customer.last_name, customer.email, customer.date_joined, customer.approved, customer.order_set.count(),lis]			
 		writer.writerow(row)
 	return response
 
@@ -206,7 +207,10 @@ def download_specific_order_details(request, id):
 	for order in client.order_set.all():
 		row=[]
 		for field in order._meta.fields:
-			row.append(str(getattr(order, field.name)))
+			if(field.name=='date'):
+				row.append(getattr(order, field.name).strftime('%d-%m-%Y %H:%M:%S'))
+			else:
+				row.append(str(getattr(order, field.name)))
 		writer.writerow(row)
 	return(response)
 def download_order_details(request):
@@ -218,7 +222,10 @@ def download_order_details(request):
 	for order in Order.objects.all():
 		row=[]
 		for field in order._meta.fields:
-			row.append(str(getattr(order, field.name)))
+			if(field.name=='date'):
+				row.append(getattr(order, field.name).strftime('%d-%m-%Y %H:%M:%S'))
+			else:
+				row.append(str(getattr(order, field.name)))
 		writer.writerow(row)
 	return response
 
@@ -230,7 +237,6 @@ def import_order_data(request):
 		if not csv_file.name.endswith('.csv'):
 			return HttpResponse('this is not a csv file')
 		read=csv.reader(codecs.iterdecode(csv_file, 'utf-8'))
-		text=''
 		headers=next(read)
 		for row in read:
 			_, create=Order.objects.get_or_create(id=row[0], status=row[1], material=row[2], quantity=row[3], unit=row[4], unit_price=row[5], net_price=row[6], date=row[7], client=User.objects.all().get(username=row[8]), sales=User.objects.all().get(username=row[9]))
@@ -244,7 +250,6 @@ def import_user_data(request):
 		if not csv_file.name.endswith('.csv'):
 			return HttpResponse('this is not a csv file')
 		read=csv.reader(codecs.iterdecode(csv_file, 'utf-8'))
-		text=''
 		headers=next(read)
 		for row in read:
 			_, create=User.objects.get_or_create(id=row[0], last_login=row[1], username=row[2], first_name=row[3], last_name=row[4], email=row[5], approved=row[6])
