@@ -49,6 +49,7 @@ class OrderCreationForm(forms.Form):
     client_choices=[]
     for cus in User.objects.all().filter(utype='CUS'):
         client_choices.append(cus.username)
+    print(client_choices)
     product=forms.CharField(label='product')
     quantity=forms.IntegerField(label='quantity')
     unit=forms.CharField(label='unit')
