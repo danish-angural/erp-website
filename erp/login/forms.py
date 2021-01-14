@@ -47,11 +47,12 @@ class CustomUserCreationForm(forms.Form):
 
 class OrderCreationForm(forms.Form):
     client_choices=[]
-    for cus in User.objects.all().filter(utype='CUS'):
-        client_choices.append(cus.username)
+    for cus in User.objects.filter(utype='CUS').all():
+        client_choices.append((cus.username, cus.username))
+    print(client_choices)
     product=forms.CharField(label='product')
     quantity=forms.IntegerField(label='quantity')
     unit=forms.CharField(label='unit')
     unit_price=forms.IntegerField(label='unit price')
     net_price=forms.IntegerField(label='net price')
-    client = forms.CharField(label='client', widget=forms.Select(choices=[tuple(client_choices)]))
+    client = forms.CharField(label='client', widget=forms.Select(choices=client_choices))

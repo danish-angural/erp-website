@@ -5,6 +5,7 @@ from django.urls.base import clear_script_prefix
 from .forms import CustomUserCreationForm, OrderCreationForm
 from django.contrib.auth import update_session_auth_hash
 from django.http import HttpResponse
+from django.conf import settings
 #from django.contrib.auth.models import User
 from django.urls import reverse
 from . models import User, Order, Details
@@ -12,6 +13,7 @@ from notifications.signals import notify
 # Create your views here.
 from datetime import date
 import time
+from django.core.mail import send_mail
 def main(request):
     return render(request, 'main.html',{})
 
@@ -62,8 +64,10 @@ def home(request):
 			form=OrderCreationForm(request.POST)
 			name = form.data.get('client')
 			if(User.objects.filter(username=name).exists()):
-				order=Order.objects.create(material=form.data.get('product'), quantity=form.data.get('quantity'), client=User.objects.get(username=name), sales=user.username, unit=form.data.get('unit'), unit_price=form.data.get('unit_price'), net_price=form.data.get('net_price'))
+				client=User.objects.get(username=name)
+				order=Order.objects.create(material=form.data.get('product'), quantity=form.data.get('quantity'),client=client , sales=user.username, unit=form.data.get('unit'), unit_price=form.data.get('unit_price'), net_price=form.data.get('net_price'))
 				order.save()
+				send_mail('Order Registered', 'Your Order with order id '+str(order.id)+' has been registered and is ready to be processed.', settings.EMAIL_HOST_USER, [client.email])
 				notify.send(sender=request.user, recipient=User.objects.all().filter(approved='Yes'), verb=user.username+' approved '+order.material+' on ' +date.today().strftime("%B %d, %Y")+ ' to status '+order.status+' at '+time.strftime("%H:%M:%S", time.localtime(time.time())))
 			form=OrderCreationForm()
 			data=Order.objects.filter(sales=user.username)
@@ -162,6 +166,7 @@ def approve_order(request,pk):
 		order.status = 'Finance approval of SO'
 	elif(order.status == 'Finance approval of SO' and user.utype == 'OPE'):
 		order.status='Ready for dispatch'
+		send_mail('Order approved', 'Your Order with order id '+str(order.id)+' has been approved and is ready to be dispatched', settings.EMAIL_HOST_USER, [order.client.email])
 	elif(order.status == 'Ready for dispatch' and user.utype == 'FIN'):
 		order.status = 'Finance cleared for dispatch'
 	elif(order.status == 'Finance cleared for dispatch' and user.utype == 'OPE'):
