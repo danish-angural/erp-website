@@ -2,13 +2,13 @@ import csv, codecs
 from django.contrib.auth import logout, login, authenticate,forms
 from django.shortcuts import render, redirect
 from django.urls.base import clear_script_prefix
-from .forms import CustomUserCreationForm, OrderCreationForm
+from .forms import CustomUserCreationForm, OrderCreationForm, AddOrder
 from django.contrib.auth import update_session_auth_hash
 from django.http import HttpResponse
 from django.conf import settings
 #from django.contrib.auth.models import User
 from django.urls import reverse
-from . models import User, Order, Details
+from . models import User, Order, Details#, Approved_order
 from notifications.signals import notify
 # Create your views here.
 from datetime import date
@@ -19,6 +19,9 @@ def main(request):
 
 def home(request):
 	user=request.user
+	if(user and user.utype=='CUS'):
+		logout(request)
+		return redirect('login')
 	num = {}
 	num['New draft'] =  Order.objects.filter(status='New draft').count()
 	num['New SO'] =  Order.objects.filter(status='New SO').count()
@@ -65,7 +68,7 @@ def home(request):
 			name = form.data.get('client')
 			if(User.objects.filter(username=name).exists()):
 				client=User.objects.get(username=name)
-				order=Order.objects.create(material=form.data.get('product'), quantity=form.data.get('quantity'),client=client , sales=user.username, unit=form.data.get('unit'), unit_price=form.data.get('unit_price'), net_price=form.data.get('net_price'))
+				order=Order.objects.create(material=form.data.get('product'), quantity=form.data.get('quantity'),client=client , sales=user.username, unit=form.data.get('unit'), unit_price=form.data.get('unit_price'), net_price=form.data.get('net_price'), optfield1=form.data.get('optfield1'), optfield2=form.data.get('optfield2'), optfield3=form.data.get('optfield3'), optfield4=form.data.get('optfield4'))
 				order.save()
 				send_mail('Order Registered', 'Your Order with order id '+str(order.id)+' has been registered and is ready to be processed.', settings.EMAIL_HOST_USER, [client.email])
 				notify.send(sender=request.user, recipient=User.objects.all().filter(approved='Yes'), verb=user.username+' approved '+order.material+' on ' +date.today().strftime("%B %d, %Y")+ ' to status '+order.status+' at '+time.strftime("%H:%M:%S", time.localtime(time.time())))
@@ -138,7 +141,7 @@ def change_order(request,pk):
 		user = request.user
 		sales = order.sales
 		order.delete()
-		order=Order.objects.create(material=form.data.get('product'), quantity=form.data.get('quantity'), client=User.objects.get(username=name), sales=sales, unit=form.data.get('unit'), unit_price=form.data.get('unit_price'), net_price=form.data.get('net_price'))
+		order=Order.objects.create(material=form.data.get('product'), quantity=form.data.get('quantity'), client=User.objects.get(username=name), sales=sales, unit=form.data.get('unit'), unit_price=form.data.get('unit_price'), net_price=form.data.get('net_price'), optfield1=form.data.get('optfield1'), optfield2=form.data.get('optfield2'), optfield3=form.data.get('optfield3'), optfield4=form.data.get('optfield4'))
 		order.save()
 		return redirect('home')
 	form = OrderCreationForm(initial={'product':order.material,'quantity':order.quantity, 'unit':order.unit, 'unit_price':order.unit_price, 'net_price':order.net_price, 'client':order.client.username})
@@ -176,7 +179,7 @@ def approve_order(request,pk):
 	elif(order.status == 'Final payments received' and user.utype == 'FIN'):
 		order.status='Order closed'
 	order.save()
-	notify.send(sender=request.user, recipient=User.objects.all().filter(approved='Yes'), verb=' approved '+order.material+' on ' +date.today().strftime("%B %d, %Y")+ ' to status '+order.status+' at '+time.strftime("%H:%M:%S", time.localtime(time.time())))
+	notify.send(sender=request.user, recipient=User.objects.all().filter(approved='Yes'), verb=user.username+ ' approved '+order.material+' on ' +date.today().strftime("%B %d, %Y")+ ' to status '+order.status+' at '+time.strftime("%H:%M:%S", time.localtime(time.time())))
 	detail = Details.objects.create(order=order, status=order.status)
 	detail.save()
 	return redirect('home')
@@ -258,11 +261,20 @@ def import_user_data(request):
 		headers=next(read)
 		for row in read:
 			_, create=User.objects.get_or_create(id=row[0], last_login=row[1], username=row[2], first_name=row[3], last_name=row[4], email=row[5], approved=row[6])
+	return redirect('home')
+def add_order(request):
+	if(request.method=='GET'):
+		form=AddOrder()
+		return render(request, 'add_order.html',context={'form':form})
+	else:
+		form=AddOrder(request.POST)
+		name = form.data.get('material')
+		if(Approved_order.objects.filter(name=name).exists()):
+			order = Approved_order.objects.get(name=name)
+			order.unit = form.data.get('unit')
+			order.price = form.data.get('price')
+			order.save()
+		else:
+			order=Approved_order.objects.create(name=form.data.get('material'), unit=form.data.get('unit'), price=form.data.get('price'))
+			order.save()
 		return redirect('home')
-			
-
-
-	
-
-
-

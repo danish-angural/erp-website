@@ -1,5 +1,5 @@
 from django.contrib.auth.forms import UserCreationForm
-from . models import User
+from . models import User, Approved_order
 from django import forms
 from django.core.exceptions import ValidationError
 
@@ -49,10 +49,21 @@ class OrderCreationForm(forms.Form):
     client_choices=[]
     for cus in User.objects.filter(utype='CUS').all():
         client_choices.append((cus.username, cus.username))
-    print(client_choices)
-    product=forms.CharField(label='product')
+    order_mat = []
+    for order in Approved_order.objects.all():
+        order_mat.append((order.name, order.name))
+    product=forms.CharField(label='product', widget=forms.Select(choices=order_mat))
     quantity=forms.IntegerField(label='quantity')
     unit=forms.CharField(label='unit')
     unit_price=forms.IntegerField(label='unit price')
     net_price=forms.IntegerField(label='net price')
     client = forms.CharField(label='client', widget=forms.Select(choices=client_choices))
+    optfield1 = forms.CharField(label='optfield1', required=False)
+    optfield2 = forms.CharField(label='optfield2', required=False)
+    optfield3 = forms.CharField(label='optfield3', required=False)
+    optfield4 = forms.CharField(label='optfield4', required=False)
+
+class AddOrder(forms.Form):
+    material = forms.CharField(label='material')
+    unit = forms.CharField(label='unit')
+    price = forms.IntegerField(label='price')
