@@ -28,6 +28,7 @@
 </head>
 <h2>{{user.utype}}</h2>
 <h2> Welcome {{user.get_full_name}}!!! </h2>
+<a href="{% url 'signup' %}"><button>add a new customer</button></a>
 {% block content %}
   <form method="POST">
     {% csrf_token %}
